@@ -1,5 +1,3 @@
-// ===== TVA FILARMONICA INTERACTIVE EFFECTS =====
-
 class TVAFilarmonica {
     constructor() {
         this.init();
@@ -15,12 +13,10 @@ class TVAFilarmonica {
         this.timelineNodes = document.querySelectorAll('.timeline-node');
         this.soundBars = document.querySelectorAll('.sound-bar');
         
-        // Particle system variables
         this.particles = [];
         this.particleSymbols = ['♪', '♫', '♩', '♬', '𝄞', '𝄢', '♭', '♯'];
         this.particleColors = ['#d4af37', '#ff6b35', '#7fb069', '#f1d4e0'];
         
-        // Animation state
         this.isVinylHovered = false;
         this.animationFrame = null;
         
@@ -28,38 +24,29 @@ class TVAFilarmonica {
     }
 
     bindEvents() {
-        // Cursor trail
         document.addEventListener('mousemove', (e) => this.updateCursorTrail(e));
         
-        // Vinyl interactions
         if (this.mainVinyl) {
             this.mainVinyl.addEventListener('mouseenter', () => this.startVinylParticles());
             this.mainVinyl.addEventListener('mouseleave', () => this.stopVinylParticles());
         }
         
-        // Showcase item tilt effects
         this.showcaseItems.forEach(item => this.addTiltEffect(item));
         
-        // Timeline interactions
         this.timelineNodes.forEach((node, index) => {
             node.addEventListener('click', () => this.handleTimelineClick(index));
             node.addEventListener('mouseenter', () => this.highlightTimelineNode(node));
             node.addEventListener('mouseleave', () => this.unhighlightTimelineNode(node));
         });
         
-        // Button interactions
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('mouseenter', () => this.enhanceButtonHover(btn));
             btn.addEventListener('mouseleave', () => this.resetButtonHover(btn));
         });
         
-        // Scroll animations
         window.addEventListener('scroll', () => this.handleScroll());
-        
-        // Resize handler
         window.addEventListener('resize', () => this.handleResize());
         
-        // Logo glitch effect
         const logo = document.querySelector('.logo');
         if (logo) {
             logo.addEventListener('click', () => this.triggerLogoGlitch());
@@ -67,7 +54,6 @@ class TVAFilarmonica {
     }
 
     setupInitialAnimations() {
-        // Add fade-in animations to elements
         const elementsToAnimate = [
             '.hero-content',
             '.hero-vinyl',
@@ -101,7 +87,6 @@ class TVAFilarmonica {
 
     stopVinylParticles() {
         this.isVinylHovered = false;
-        // Clear existing particles
         this.particles = [];
         if (this.particleContainer) {
             this.particleContainer.innerHTML = '';
@@ -111,15 +96,12 @@ class TVAFilarmonica {
     createParticleSystem() {
         if (!this.isVinylHovered || !this.particleContainer) return;
 
-        // Create a new particle
         const particle = this.createParticle();
         this.particles.push(particle);
         this.particleContainer.appendChild(particle.element);
 
-        // Clean up old particles
         this.particles = this.particles.filter(p => !p.isDead);
 
-        // Continue creating particles
         setTimeout(() => this.createParticleSystem(), 200 + Math.random() * 300);
     }
 
@@ -127,16 +109,13 @@ class TVAFilarmonica {
         const element = document.createElement('div');
         element.className = 'musical-particle';
         
-        // Random particle properties
         const symbol = this.particleSymbols[Math.floor(Math.random() * this.particleSymbols.length)];
         const color = this.particleColors[Math.floor(Math.random() * this.particleColors.length)];
         const size = 1 + Math.random() * 0.8;
         const angle = Math.random() * Math.PI * 2;
-        const distance = 100 + Math.random() * 50;
         
-        // Position around the vinyl center
-        const centerX = 150; // Half of vinyl container width
-        const centerY = 150; // Half of vinyl container height
+        const centerX = 150;
+        const centerY = 150;
         const startX = centerX + Math.cos(angle) * 80;
         const startY = centerY + Math.sin(angle) * 80;
         
@@ -147,7 +126,6 @@ class TVAFilarmonica {
         element.style.fontSize = size + 'rem';
         element.style.textShadow = `0 0 10px ${color}`;
         
-        // Particle lifecycle
         const particle = {
             element,
             isDead: false,
@@ -155,7 +133,6 @@ class TVAFilarmonica {
             maxLife: 4000 + Math.random() * 2000
         };
         
-        // Remove particle after animation
         setTimeout(() => {
             particle.isDead = true;
             if (element.parentNode) {
@@ -189,16 +166,14 @@ class TVAFilarmonica {
     handleTimelineClick(index) {
         const years = [1791, 1973, 2000, 2025];
         const descriptions = [
-            "Era dorada de la música filarmónica clásica",
+            "Era naciente de la música filarmónica clásica",
             "Revolución de las grabaciones de alta fidelidad",
             "Digitalización del archivo musical temporal",
-            "Presente: Preservación interdimensional activa"
+            "Presente: Preservación musical activa"
         ];
         
-        // Create popup notification
         this.showTimelineInfo(years[index], descriptions[index]);
         
-        // Add visual feedback
         const node = this.timelineNodes[index];
         node.style.transform = 'translateY(-50%) scale(1.5)';
         node.classList.add('glow-gold');
@@ -210,7 +185,6 @@ class TVAFilarmonica {
     }
 
     showTimelineInfo(year, description) {
-        // Create temporary info popup
         const popup = document.createElement('div');
         popup.className = 'timeline-popup';
         popup.innerHTML = `
@@ -218,7 +192,6 @@ class TVAFilarmonica {
             <div class="popup-description">${description}</div>
         `;
         
-        // Style the popup
         Object.assign(popup.style, {
             position: 'fixed',
             top: '50%',
@@ -237,7 +210,6 @@ class TVAFilarmonica {
         
         document.body.appendChild(popup);
         
-        // Auto remove after 3 seconds
         setTimeout(() => {
             popup.style.opacity = '0';
             setTimeout(() => {
@@ -247,7 +219,6 @@ class TVAFilarmonica {
             }, 300);
         }, 3000);
         
-        // Click to dismiss
         popup.addEventListener('click', () => {
             popup.style.opacity = '0';
             setTimeout(() => {
@@ -269,12 +240,10 @@ class TVAFilarmonica {
     }
 
     enhanceButtonHover(btn) {
-        // Add particle effect for crowdfunding button
         if (btn.classList.contains('btn-crowdfunding')) {
             this.createButtonParticles(btn);
         }
         
-        // Enhanced glow effect
         btn.style.filter = 'brightness(1.2)';
     }
 
@@ -319,7 +288,6 @@ class TVAFilarmonica {
             logo.style.animation = 'logoGlitch 0.3s ease-in-out';
         }, 10);
         
-        // Add random color shift
         const colors = ['#d4af37', '#ff6b35', '#7fb069', '#f1d4e0'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         logo.style.textShadow = `0 0 50px ${randomColor}`;
@@ -330,10 +298,7 @@ class TVAFilarmonica {
     }
 
     startAnimations() {
-        // Sound visualizer animation
         this.animateSoundBars();
-        
-        // Continuous background animations
         this.animateBackgroundElements();
     }
 
@@ -349,7 +314,6 @@ class TVAFilarmonica {
     }
 
     animateBackgroundElements() {
-        // Animate holographic elements with random intensity changes
         const holoElements = document.querySelectorAll('.holo-circle, .holo-hexagon');
         
         setInterval(() => {
@@ -359,7 +323,6 @@ class TVAFilarmonica {
             });
         }, 2000);
         
-        // Random wave generation
         setInterval(() => {
             this.createRandomWave();
         }, 5000);
@@ -390,9 +353,7 @@ class TVAFilarmonica {
     }
 
     handleScroll() {
-        // Parallax effect for floating elements
         const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
         
         const floatingVinyls = document.querySelectorAll('.vinyl');
         floatingVinyls.forEach((vinyl, index) => {
@@ -400,7 +361,6 @@ class TVAFilarmonica {
             vinyl.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.1}deg)`;
         });
         
-        // Reveal animations for elements coming into view
         const elements = document.querySelectorAll('.showcase-item, .timeline-container');
         elements.forEach(element => {
             const elementTop = element.getBoundingClientRect().top;
@@ -414,15 +374,13 @@ class TVAFilarmonica {
     }
 
     handleResize() {
-        // Adjust particle system for different screen sizes
         if (window.innerWidth < 768) {
-            this.particleSymbols = ['♪', '♫', '♩', '♬']; // Reduce complexity on mobile
+            this.particleSymbols = ['♪', '♫', '♩', '♬'];
         } else {
             this.particleSymbols = ['♪', '♫', '♩', '♬', '𝄞', '𝄢', '♭', '♯'];
         }
     }
 
-    // Utility functions
     createRippleEffect(element, x, y) {
         const ripple = document.createElement('div');
         ripple.style.position = 'absolute';
@@ -444,7 +402,6 @@ class TVAFilarmonica {
         }, 600);
     }
 
-    // Easter egg: Konami code for special effect
     setupKonamiCode() {
         const konamiCode = [
             'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -467,7 +424,6 @@ class TVAFilarmonica {
     }
 
     triggerSpecialEffect() {
-        // Secret TVA portal effect
         const portal = document.createElement('div');
         portal.style.position = 'fixed';
         portal.style.top = '50%';
@@ -482,7 +438,6 @@ class TVAFilarmonica {
         
         document.body.appendChild(portal);
         
-        // Play with the logo
         const logo = document.querySelector('.logo');
         if (logo) {
             logo.textContent = 'TVA PORTAL ACTIVATED';
@@ -499,7 +454,6 @@ class TVAFilarmonica {
     }
 }
 
-// CSS animations to add dynamically
 const additionalStyles = `
     @keyframes rippleExpand {
         0% { width: 0; height: 0; opacity: 1; }
@@ -513,17 +467,14 @@ const additionalStyles = `
     }
 `;
 
-// Add additional styles to document
 const styleSheet = document.createElement('style');
 styleSheet.textContent = additionalStyles;
 document.head.appendChild(styleSheet);
 
-// Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const tvaApp = new TVAFilarmonica();
-    tvaApp.setupKonamiCode(); // Easter egg
+    tvaApp.setupKonamiCode();
     
-    // Add click ripple effects to interactive elements
     document.querySelectorAll('.btn, .showcase-item, .timeline-node').forEach(element => {
         element.addEventListener('click', (e) => {
             const rect = element.getBoundingClientRect();
@@ -534,7 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Service worker registration for offline support (optional)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -543,7 +493,6 @@ if ('serviceWorker' in navigator) {
     });
 }
 
-// Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = TVAFilarmonica;
 }
