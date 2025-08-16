@@ -19,8 +19,46 @@ class TVAFilarmonica {
         
         this.isVinylHovered = false;
         this.animationFrame = null;
+
+        this.debouncedHandleScroll = this.debounce(this.handleScroll.bind(this), 16);
+        this.debouncedHandleResize = this.debounce(this.handleResize.bind(this), 200);
         
         this.setupInitialAnimations();
+        this.setupLazyLoading();
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    setupLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (img.dataset.src) {
+                            img.src = img.dataset.src;
+                            img.removeAttribute('data-src');
+                        }
+                        img.classList.remove('lazy');
+                        imageObserver.unobserve(img);
+                    }
+                });
+            });
+
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                imageObserver.observe(img);
+            });
+        }
     }
 
     bindEvents() {
@@ -43,14 +81,36 @@ class TVAFilarmonica {
             btn.addEventListener('mouseenter', () => this.enhanceButtonHover(btn));
             btn.addEventListener('mouseleave', () => this.resetButtonHover(btn));
         });
-        
-        window.addEventListener('scroll', () => this.handleScroll());
-        window.addEventListener('resize', () => this.handleResize());
+        window.addEventListener('scroll', this.debouncedHandleScroll, { passive: true });
+        window.addEventListener('resize', this.debouncedHandleResize);
         
         const logo = document.querySelector('.logo');
         if (logo) {
             logo.addEventListener('click', () => this.triggerLogoGlitch());
         }
+        this.setupButtonClickEffects();
+    }
+
+    setupButtonClickEffects() {
+        document.querySelectorAll('.btn-ver-mas').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                this.createRippleEffect(btn, x, y);
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    btn.style.transform = '';
+                }, 150);
+            });
+            btn.addEventListener('mouseenter', (e) => {
+                btn.style.filter = 'brightness(1.1)';
+            });
+
+            btn.addEventListener('mouseleave', (e) => {
+                btn.style.filter = '';
+            });
+        });
     }
 
     setupInitialAnimations() {
@@ -60,23 +120,36 @@ class TVAFilarmonica {
             '.showcase-item',
             '.timeline-container'
         ];
+
+        let animationIndex = 0;
         
-        elementsToAnimate.forEach((selector, index) => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach((element, i) => {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(30px)';
-                setTimeout(() => {
-                    element.classList.add('fade-in-up');
-                }, (index * 200) + (i * 100));
-            });
-        });
+        const animateNext = () => {
+            if (animationIndex < elementsToAnimate.length) {
+                const selector = elementsToAnimate[animationIndex];
+                const elements = document.querySelectorAll(selector);
+                
+                elements.forEach((element, i) => {
+                    element.style.opacity = '0';
+                    element.style.transform = 'translateY(30px)';
+                    setTimeout(() => {
+                        element.classList.add('fade-in-up');
+                    }, i * 100);
+                });
+                
+                animationIndex++;
+                setTimeout(animateNext, 200);
+            }
+        };
+        
+        requestAnimationFrame(animateNext);
     }
 
     updateCursorTrail(e) {
         if (this.cursorTrail) {
-            this.cursorTrail.style.left = e.clientX - 10 + 'px';
-            this.cursorTrail.style.top = e.clientY - 10 + 'px';
+            requestAnimationFrame(() => {
+                this.cursorTrail.style.left = e.clientX - 10 + 'px';
+                this.cursorTrail.style.top = e.clientY - 10 + 'px';
+            });
         }
     }
 
@@ -89,7 +162,15 @@ class TVAFilarmonica {
         this.isVinylHovered = false;
         this.particles = [];
         if (this.particleContainer) {
-            this.particleContainer.innerHTML = '';
+            const currentParticles = this.particleContainer.querySelectorAll('.musical-particle');
+            currentParticles.forEach(particle => {
+                particle.style.opacity = '0';
+                particle.style.transform = 'scale(0)';
+            });
+            
+            setTimeout(() => {
+                this.particleContainer.innerHTML = '';
+            }, 300);
         }
     }
 
@@ -125,6 +206,14 @@ class TVAFilarmonica {
         element.style.color = color;
         element.style.fontSize = size + 'rem';
         element.style.textShadow = `0 0 10px ${color}`;
+        element.style.opacity = '0';
+        element.style.transform = 'scale(0)';
+
+        requestAnimationFrame(() => {
+            element.style.transition = 'all 0.3s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'scale(1)';
+        });
         
         const particle = {
             element,
@@ -135,16 +224,24 @@ class TVAFilarmonica {
         
         setTimeout(() => {
             particle.isDead = true;
-            if (element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
+            element.style.opacity = '0';
+            element.style.transform = 'scale(0)';
+            setTimeout(() => {
+                if (element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            }, 300);
         }, particle.maxLife);
         
         return particle;
     }
 
     addTiltEffect(element) {
+        let tiltTimeout;
+        
         element.addEventListener('mousemove', (e) => {
+            clearTimeout(tiltTimeout);
+            
             const rect = element.getBoundingClientRect();
             const centerX = rect.left + rect.width / 2;
             const centerY = rect.top + rect.height / 2;
@@ -155,11 +252,15 @@ class TVAFilarmonica {
             const rotateX = (mouseY / rect.height) * 10;
             const rotateY = (mouseX / rect.width) * -10;
             
-            element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            requestAnimationFrame(() => {
+                element.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+            });
         });
         
         element.addEventListener('mouseleave', () => {
-            element.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+            tiltTimeout = setTimeout(() => {
+                element.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
+            }, 100);
         });
     }
 
@@ -175,21 +276,31 @@ class TVAFilarmonica {
         this.showTimelineInfo(years[index], descriptions[index]);
         
         const node = this.timelineNodes[index];
-        node.style.transform = 'translateY(-50%) scale(1.5)';
-        node.classList.add('glow-gold');
+        requestAnimationFrame(() => {
+            node.style.transform = 'translateY(-50%) scale(1.5)';
+            node.classList.add('glow-gold');
+        });
         
         setTimeout(() => {
-            node.style.transform = 'translateY(-50%) scale(1)';
-            node.classList.remove('glow-gold');
+            requestAnimationFrame(() => {
+                node.style.transform = 'translateY(-50%) scale(1)';
+                node.classList.remove('glow-gold');
+            });
         }, 500);
     }
 
     showTimelineInfo(year, description) {
+        const existingPopup = document.querySelector('.timeline-popup');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+
         const popup = document.createElement('div');
         popup.className = 'timeline-popup';
         popup.innerHTML = `
             <div class="popup-year">${year}</div>
             <div class="popup-description">${description}</div>
+            <div class="popup-close">✕</div>
         `;
         
         Object.assign(popup.style, {
@@ -205,38 +316,56 @@ class TVAFilarmonica {
             textAlign: 'center',
             zIndex: '10000',
             backdropFilter: 'blur(10px)',
-            animation: 'fadeInUp 0.3s ease'
+            animation: 'fadeInUp 0.3s ease',
+            maxWidth: '400px',
+            cursor: 'pointer'
+        });
+
+        const closeBtn = popup.querySelector('.popup-close');
+        Object.assign(closeBtn.style, {
+            position: 'absolute',
+            top: '10px',
+            right: '15px',
+            fontSize: '1.2rem',
+            cursor: 'pointer',
+            opacity: '0.7'
         });
         
         document.body.appendChild(popup);
         
-        setTimeout(() => {
+        const closePopup = () => {
             popup.style.opacity = '0';
+            popup.style.transform = 'translate(-50%, -50%) scale(0.9)';
             setTimeout(() => {
                 if (popup.parentNode) {
                     popup.parentNode.removeChild(popup);
                 }
             }, 300);
-        }, 3000);
-        
-        popup.addEventListener('click', () => {
-            popup.style.opacity = '0';
-            setTimeout(() => {
-                if (popup.parentNode) {
-                    popup.parentNode.removeChild(popup);
-                }
-            }, 300);
-        });
+        };
+
+        setTimeout(closePopup, 4000);
+        popup.addEventListener('click', closePopup);
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                closePopup();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
     }
 
     highlightTimelineNode(node) {
-        node.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.8)';
-        node.style.transform = 'translateY(-50%) scale(1.2)';
+        requestAnimationFrame(() => {
+            node.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.8)';
+            node.style.transform = 'translateY(-50%) scale(1.2)';
+        });
     }
 
     unhighlightTimelineNode(node) {
-        node.style.boxShadow = '';
-        node.style.transform = 'translateY(-50%) scale(1)';
+        requestAnimationFrame(() => {
+            node.style.boxShadow = '';
+            node.style.transform = 'translateY(-50%) scale(1)';
+        });
     }
 
     enhanceButtonHover(btn) {
@@ -244,11 +373,15 @@ class TVAFilarmonica {
             this.createButtonParticles(btn);
         }
         
-        btn.style.filter = 'brightness(1.2)';
+        requestAnimationFrame(() => {
+            btn.style.filter = 'brightness(1.2)';
+        });
     }
 
     resetButtonHover(btn) {
-        btn.style.filter = '';
+        requestAnimationFrame(() => {
+            btn.style.filter = '';
+        });
     }
 
     createButtonParticles(btn) {
@@ -258,15 +391,17 @@ class TVAFilarmonica {
         for (let i = 0; i < 3; i++) {
             setTimeout(() => {
                 const particle = document.createElement('div');
-                particle.style.position = 'absolute';
-                particle.style.width = '4px';
-                particle.style.height = '4px';
-                particle.style.background = '#d4af37';
-                particle.style.borderRadius = '50%';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animation = 'particleFloat 1s ease-out forwards';
-                particle.style.pointerEvents = 'none';
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 4px;
+                    height: 4px;
+                    background: #d4af37;
+                    border-radius: 50%;
+                    left: ${Math.random() * 100}%;
+                    top: ${Math.random() * 100}%;
+                    animation: particleFloat 1s ease-out forwards;
+                    pointer-events: none;
+                `;
                 
                 particleContainer.appendChild(particle);
                 
@@ -284,9 +419,9 @@ class TVAFilarmonica {
         if (!logo) return;
         
         logo.style.animation = 'none';
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             logo.style.animation = 'logoGlitch 0.3s ease-in-out';
-        }, 10);
+        });
         
         const colors = ['#d4af37', '#ff6b35', '#7fb069', '#f1d4e0'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -304,13 +439,15 @@ class TVAFilarmonica {
 
     animateSoundBars() {
         if (!this.soundBars.length) return;
-        
-        setInterval(() => {
+        const animateBars = () => {
             this.soundBars.forEach(bar => {
                 const randomHeight = 15 + Math.random() * 30;
                 bar.style.height = randomHeight + 'px';
             });
-        }, 150);
+            setTimeout(() => requestAnimationFrame(animateBars), 150);
+        };
+        
+        animateBars();
     }
 
     animateBackgroundElements() {
@@ -319,7 +456,9 @@ class TVAFilarmonica {
         setInterval(() => {
             holoElements.forEach(element => {
                 const randomOpacity = 0.05 + Math.random() * 0.1;
-                element.style.opacity = randomOpacity;
+                requestAnimationFrame(() => {
+                    element.style.opacity = randomOpacity;
+                });
             });
         }, 2000);
         
@@ -334,14 +473,16 @@ class TVAFilarmonica {
         
         const wave = document.createElement('div');
         wave.className = 'wave';
-        wave.style.position = 'absolute';
-        wave.style.border = '1px solid rgba(212, 175, 55, 0.1)';
-        wave.style.borderRadius = '50%';
-        wave.style.width = '100px';
-        wave.style.height = '100px';
-        wave.style.left = Math.random() * 80 + '%';
-        wave.style.top = Math.random() * 80 + '%';
-        wave.style.animation = 'waveExpand 6s ease-out forwards';
+        wave.style.cssText = `
+            position: absolute;
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            left: ${Math.random() * 80}%;
+            top: ${Math.random() * 80}%;
+            animation: waveExpand 6s ease-out forwards;
+        `;
         
         wavesContainer.appendChild(wave);
         
@@ -354,23 +495,30 @@ class TVAFilarmonica {
 
     handleScroll() {
         const scrolled = window.pageYOffset;
-        
+
         const floatingVinyls = document.querySelectorAll('.vinyl');
         floatingVinyls.forEach((vinyl, index) => {
             const speed = 0.3 + (index * 0.1);
-            vinyl.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.1}deg)`;
+            requestAnimationFrame(() => {
+                vinyl.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.1}deg)`;
+            });
         });
-        
-        const elements = document.querySelectorAll('.showcase-item, .timeline-container');
-        elements.forEach(element => {
-            const elementTop = element.getBoundingClientRect().top;
-            const windowHeight = window.innerHeight;
+        if (!this.intersectionObserver) {
+            this.intersectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        requestAnimationFrame(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        });
+                    }
+                });
+            }, { threshold: 0.1 });
             
-            if (elementTop < windowHeight * 0.75) {
-                element.style.opacity = '1';
-                element.style.transform = 'translateY(0)';
-            }
-        });
+            document.querySelectorAll('.showcase-item, .timeline-container').forEach(element => {
+                this.intersectionObserver.observe(element);
+            });
+        }
     }
 
     handleResize() {
@@ -379,19 +527,30 @@ class TVAFilarmonica {
         } else {
             this.particleSymbols = ['♪', '♫', '♩', '♬', '𝄞', '𝄢', '♭', '♯'];
         }
+        this.recalculateElements();
+    }
+
+    recalculateElements() {
+        const showcaseItems = document.querySelectorAll('.showcase-item');
+        showcaseItems.forEach(item => {
+            item.style.transform = '';
+        });
     }
 
     createRippleEffect(element, x, y) {
         const ripple = document.createElement('div');
-        ripple.style.position = 'absolute';
-        ripple.style.left = x + 'px';
-        ripple.style.top = y + 'px';
-        ripple.style.width = '0';
-        ripple.style.height = '0';
-        ripple.style.border = '2px solid rgba(212, 175, 55, 0.6)';
-        ripple.style.borderRadius = '50%';
-        ripple.style.animation = 'rippleExpand 0.6s ease-out forwards';
-        ripple.style.pointerEvents = 'none';
+        ripple.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+            width: 0;
+            height: 0;
+            border: 2px solid rgba(212, 175, 55, 0.6);
+            border-radius: 50%;
+            animation: rippleExpand 0.6s ease-out forwards;
+            pointer-events: none;
+            z-index: 100;
+        `;
         
         element.appendChild(ripple);
         
@@ -425,32 +584,102 @@ class TVAFilarmonica {
 
     triggerSpecialEffect() {
         const portal = document.createElement('div');
-        portal.style.position = 'fixed';
-        portal.style.top = '50%';
-        portal.style.left = '50%';
-        portal.style.transform = 'translate(-50%, -50%)';
-        portal.style.width = '0';
-        portal.style.height = '0';
-        portal.style.background = 'conic-gradient(from 0deg, #ff6b35, #d4af37, #7fb069, #5f021f, #ff6b35)';
-        portal.style.borderRadius = '50%';
-        portal.style.zIndex = '10000';
-        portal.style.animation = 'portalExpand 2s ease-out forwards';
+        portal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 0;
+            height: 0;
+            background: conic-gradient(from 0deg, #ff6b35, #d4af37, #7fb069, #5f021f, #ff6b35);
+            border-radius: 50%;
+            z-index: 10000;
+            animation: portalExpand 2s ease-out forwards;
+        `;
         
         document.body.appendChild(portal);
         
         const logo = document.querySelector('.logo');
         if (logo) {
+            const originalText = logo.textContent;
             logo.textContent = 'TVA PORTAL ACTIVATED';
+            
             setTimeout(() => {
-                logo.textContent = 'LA FIL';
+                logo.textContent = originalText;
             }, 3000);
         }
+        
+        this.createPortalParticles();
         
         setTimeout(() => {
             if (portal.parentNode) {
                 portal.parentNode.removeChild(portal);
             }
         }, 2000);
+    }
+
+    createPortalParticles() {
+        const particleContainer = document.createElement('div');
+        particleContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        `;
+        
+        document.body.appendChild(particleContainer);
+        
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                const symbols = ['⚡', '🌌', '⭐', '✨', '🎵', '🎶'];
+                const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+                
+                particle.textContent = randomSymbol;
+                particle.style.cssText = `
+                    position: absolute;
+                    left: ${50 + (Math.random() - 0.5) * 40}%;
+                    top: ${50 + (Math.random() - 0.5) * 40}%;
+                    font-size: ${1 + Math.random()}rem;
+                    color: #d4af37;
+                    animation: portalParticleFloat 3s ease-out forwards;
+                    pointer-events: none;
+                `;
+                
+                particleContainer.appendChild(particle);
+            }, i * 100);
+        }
+        
+        setTimeout(() => {
+            if (particleContainer.parentNode) {
+                particleContainer.parentNode.removeChild(particleContainer);
+            }
+        }, 4000);
+    }
+    destroy() {
+        window.removeEventListener('scroll', this.debouncedHandleScroll);
+        window.removeEventListener('resize', this.debouncedHandleResize);
+ 
+        if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+        }
+
+        this.particles = [];
+        this.isVinylHovered = false;
+
+        if (this.animationFrame) {
+            cancelAnimationFrame(this.animationFrame);
+        }
+    }
+
+    reinitialize() {
+        this.destroy();
+        this.init();
+        this.bindEvents();
+        this.startAnimations();
     }
 }
 
@@ -465,6 +694,81 @@ const additionalStyles = `
         50% { width: 300px; height: 300px; opacity: 1; }
         100% { width: 0; height: 0; opacity: 0; }
     }
+
+    @keyframes portalParticleFloat {
+        0% {
+            transform: translateY(0) scale(1) rotate(0deg);
+            opacity: 1;
+        }
+        50% {
+            transform: translateY(-150px) scale(1.5) rotate(180deg);
+            opacity: 0.8;
+        }
+        100% {
+            transform: translateY(-300px) scale(0.5) rotate(360deg);
+            opacity: 0;
+        }
+    }
+
+    .timeline-popup {
+        transition: all 0.3s ease;
+    }
+
+    .timeline-popup .popup-year {
+        font-family: 'Orbitron', monospace;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #d4af37;
+        margin-bottom: 1rem;
+    }
+
+    .timeline-popup .popup-description {
+        font-size: 1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+
+    .timeline-popup .popup-close {
+        transition: opacity 0.3s ease;
+    }
+
+    .timeline-popup .popup-close:hover {
+        opacity: 1;
+    }
+
+    /* Mejoras para botones en móviles */
+    @media (max-width: 768px) {
+        .btn-ver-mas {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .btn-ver-mas:active {
+            transform: scale(0.95);
+        }
+    }
+
+    /* Optimización para animaciones en dispositivos de bajo rendimiento */
+    @media (prefers-reduced-motion: reduce) {
+        .musical-particle {
+            animation: none;
+        }
+        
+        .timeline-popup {
+            animation: none;
+        }
+    }
+
+    /* Mejoras de accesibilidad */
+    .btn-ver-mas:focus-visible {
+        outline: 2px solid #d4af37;
+        outline-offset: 2px;
+    }
+
+    .timeline-node:focus-visible {
+        outline: 2px solid #d4af37;
+        outline-offset: 4px;
+    }
 `;
 
 const styleSheet = document.createElement('style');
@@ -474,22 +778,49 @@ document.head.appendChild(styleSheet);
 document.addEventListener('DOMContentLoaded', () => {
     const tvaApp = new TVAFilarmonica();
     tvaApp.setupKonamiCode();
-    
     document.querySelectorAll('.btn, .showcase-item, .timeline-node').forEach(element => {
         element.addEventListener('click', (e) => {
-            const rect = element.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            tvaApp.createRippleEffect(element, x, y);
+            if (!element.href || element.href.startsWith(window.location.origin)) {
+                const rect = element.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                tvaApp.createRippleEffect(element, x, y);
+            }
         });
     });
+
+    window.addEventListener('error', (e) => {
+        console.warn('LA FIL: Error capturado:', e.error);
+    });
+
+    if ('PerformanceObserver' in window) {
+        const observer = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+                if (entry.entryType === 'measure') {
+                    console.log(`LA FIL Performance: ${entry.name}: ${entry.duration}ms`);
+                }
+            }
+        });
+        
+        observer.observe({ entryTypes: ['measure'] });
+    }
+
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        window.tvaApp = tvaApp;
+        console.log('🎵 LA FIL Portal Musical cargado exitosamente');
+        console.log('🔧 Instancia disponible en window.tvaApp para debugging');
+    }
 });
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-            .then(registration => console.log('SW registered'))
-            .catch(registrationError => console.log('SW registration failed'));
+            .then(registration => {
+                console.log('🔧 Service Worker registrado exitosamente');
+            })
+            .catch(registrationError => {
+                console.log('⚠️ Error al registrar Service Worker:', registrationError);
+            });
     });
 }
 
