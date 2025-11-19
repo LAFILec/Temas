@@ -3,6 +3,7 @@ class TVAFilarmonica {
         this.init();
         this.bindEvents();
         this.startAnimations();
+        this.initRepertorioSwitch();
     }
 
     init() {
@@ -19,6 +20,7 @@ class TVAFilarmonica {
         
         this.isVinylHovered = false;
         this.animationFrame = null;
+        this.currentRepertorio = 'clasico';
 
         this.debouncedHandleScroll = this.debounce(this.handleScroll.bind(this), 16);
         this.debouncedHandleResize = this.debounce(this.handleResize.bind(this), 200);
@@ -61,6 +63,61 @@ class TVAFilarmonica {
         }
     }
 
+    initRepertorioSwitch() {
+        this.switchButtons = document.querySelectorAll('.switch-btn');
+        this.clasicoGrid = document.querySelector('.showcase-grid[data-repertorio="clasico"]');
+        this.navidadGrid = document.querySelector('.showcase-grid[data-repertorio="navidad"]');
+
+        this.switchButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const repertorio = btn.dataset.repertorio;
+                if (repertorio !== this.currentRepertorio) {
+                    this.cambiarRepertorio(repertorio, btn);
+                }
+            });
+        });
+    }
+
+    cambiarRepertorio(nuevoRepertorio, btnClicked) {
+        const currentGrid = this.currentRepertorio === 'clasico' ? this.clasicoGrid : this.navidadGrid;
+        const nextGrid = nuevoRepertorio === 'clasico' ? this.clasicoGrid : this.navidadGrid;
+
+        this.switchButtons.forEach(btn => btn.classList.remove('active'));
+        btnClicked.classList.add('active');
+
+        currentGrid.classList.add('glitch-out');
+
+        setTimeout(() => {
+            currentGrid.style.display = 'none';
+            currentGrid.classList.remove('glitch-out');
+
+            nextGrid.style.display = 'grid';
+            nextGrid.style.opacity = '0';
+
+            requestAnimationFrame(() => {
+                nextGrid.classList.add('fade-in');
+                nextGrid.style.opacity = '1';
+            });
+
+            setTimeout(() => {
+                nextGrid.classList.remove('fade-in');
+                this.reinitializeShowcaseItems();
+            }, 600);
+
+            this.currentRepertorio = nuevoRepertorio;
+        }, 500);
+    }
+
+    reinitializeShowcaseItems() {
+        this.showcaseItems = document.querySelectorAll('.showcase-item');
+        this.showcaseItems.forEach(item => {
+            if (!item.dataset.tiltInitialized) {
+                this.addTiltEffect(item);
+                item.dataset.tiltInitialized = 'true';
+            }
+        });
+    }
+
     bindEvents() {
         document.addEventListener('mousemove', (e) => this.updateCursorTrail(e));
         
@@ -81,6 +138,7 @@ class TVAFilarmonica {
             btn.addEventListener('mouseenter', () => this.enhanceButtonHover(btn));
             btn.addEventListener('mouseleave', () => this.resetButtonHover(btn));
         });
+
         window.addEventListener('scroll', this.debouncedHandleScroll, { passive: true });
         window.addEventListener('resize', this.debouncedHandleResize);
         
@@ -88,6 +146,7 @@ class TVAFilarmonica {
         if (logo) {
             logo.addEventListener('click', () => this.triggerLogoGlitch());
         }
+
         this.setupButtonClickEffects();
     }
 
@@ -103,6 +162,7 @@ class TVAFilarmonica {
                     btn.style.transform = '';
                 }, 150);
             });
+
             btn.addEventListener('mouseenter', (e) => {
                 btn.style.filter = 'brightness(1.1)';
             });
@@ -345,6 +405,7 @@ class TVAFilarmonica {
 
         setTimeout(closePopup, 4000);
         popup.addEventListener('click', closePopup);
+
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
                 closePopup();
@@ -415,20 +476,20 @@ class TVAFilarmonica {
     }
 
     triggerLogoGlitch() {
-        const logo = document.querySelector('.logo');
-        if (!logo) return;
+        const logoImage = document.querySelector('.logo-image');
+        if (!logoImage) return;
         
-        logo.style.animation = 'none';
+        logoImage.style.animation = 'none';
         requestAnimationFrame(() => {
-            logo.style.animation = 'logoGlitch 0.3s ease-in-out';
+            logoImage.style.animation = 'logoGlitch 0.3s ease-in-out';
         });
         
         const colors = ['#d4af37', '#ff6b35', '#7fb069', '#f1d4e0'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
-        logo.style.textShadow = `0 0 50px ${randomColor}`;
+        logoImage.style.filter = `drop-shadow(0 0 50px ${randomColor})`;
         
         setTimeout(() => {
-            logo.style.textShadow = '0 0 30px rgba(212, 175, 55, 0.6)';
+            logoImage.style.filter = 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.6))';
         }, 300);
     }
 
@@ -439,6 +500,7 @@ class TVAFilarmonica {
 
     animateSoundBars() {
         if (!this.soundBars.length) return;
+
         const animateBars = () => {
             this.soundBars.forEach(bar => {
                 const randomHeight = 15 + Math.random() * 30;
@@ -503,6 +565,7 @@ class TVAFilarmonica {
                 vinyl.style.transform = `translateY(${scrolled * speed}px) rotate(${scrolled * 0.1}deg)`;
             });
         });
+
         if (!this.intersectionObserver) {
             this.intersectionObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
@@ -599,13 +662,13 @@ class TVAFilarmonica {
         
         document.body.appendChild(portal);
         
-        const logo = document.querySelector('.logo');
-        if (logo) {
-            const originalText = logo.textContent;
-            logo.textContent = 'TVA PORTAL ACTIVATED';
+        const logoImage = document.querySelector('.logo-image');
+        if (logoImage) {
+            const originalFilter = logoImage.style.filter;
+            logoImage.style.filter = 'hue-rotate(180deg) saturate(2)';
             
             setTimeout(() => {
-                logo.textContent = originalText;
+                logoImage.style.filter = originalFilter;
             }, 3000);
         }
         
@@ -659,10 +722,11 @@ class TVAFilarmonica {
             }
         }, 4000);
     }
+
     destroy() {
         window.removeEventListener('scroll', this.debouncedHandleScroll);
         window.removeEventListener('resize', this.debouncedHandleResize);
- 
+
         if (this.intersectionObserver) {
             this.intersectionObserver.disconnect();
         }
@@ -683,101 +747,10 @@ class TVAFilarmonica {
     }
 }
 
-const additionalStyles = `
-    @keyframes rippleExpand {
-        0% { width: 0; height: 0; opacity: 1; }
-        100% { width: 100px; height: 100px; opacity: 0; }
-    }
-    
-    @keyframes portalExpand {
-        0% { width: 0; height: 0; opacity: 0; }
-        50% { width: 300px; height: 300px; opacity: 1; }
-        100% { width: 0; height: 0; opacity: 0; }
-    }
-
-    @keyframes portalParticleFloat {
-        0% {
-            transform: translateY(0) scale(1) rotate(0deg);
-            opacity: 1;
-        }
-        50% {
-            transform: translateY(-150px) scale(1.5) rotate(180deg);
-            opacity: 0.8;
-        }
-        100% {
-            transform: translateY(-300px) scale(0.5) rotate(360deg);
-            opacity: 0;
-        }
-    }
-
-    .timeline-popup {
-        transition: all 0.3s ease;
-    }
-
-    .timeline-popup .popup-year {
-        font-family: 'Orbitron', monospace;
-        font-size: 2rem;
-        font-weight: 700;
-        color: #d4af37;
-        margin-bottom: 1rem;
-    }
-
-    .timeline-popup .popup-description {
-        font-size: 1rem;
-        line-height: 1.6;
-        opacity: 0.9;
-    }
-
-    .timeline-popup .popup-close {
-        transition: opacity 0.3s ease;
-    }
-
-    .timeline-popup .popup-close:hover {
-        opacity: 1;
-    }
-
-    /* Mejoras para botones en móviles */
-    @media (max-width: 768px) {
-        .btn-ver-mas {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .btn-ver-mas:active {
-            transform: scale(0.95);
-        }
-    }
-
-    /* Optimización para animaciones en dispositivos de bajo rendimiento */
-    @media (prefers-reduced-motion: reduce) {
-        .musical-particle {
-            animation: none;
-        }
-        
-        .timeline-popup {
-            animation: none;
-        }
-    }
-
-    /* Mejoras de accesibilidad */
-    .btn-ver-mas:focus-visible {
-        outline: 2px solid #d4af37;
-        outline-offset: 2px;
-    }
-
-    .timeline-node:focus-visible {
-        outline: 2px solid #d4af37;
-        outline-offset: 4px;
-    }
-`;
-
-const styleSheet = document.createElement('style');
-styleSheet.textContent = additionalStyles;
-document.head.appendChild(styleSheet);
-
 document.addEventListener('DOMContentLoaded', () => {
     const tvaApp = new TVAFilarmonica();
     tvaApp.setupKonamiCode();
+
     document.querySelectorAll('.btn, .showcase-item, .timeline-node').forEach(element => {
         element.addEventListener('click', (e) => {
             if (!element.href || element.href.startsWith(window.location.origin)) {
@@ -793,22 +766,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn('LA FIL: Error capturado:', e.error);
     });
 
-    if ('PerformanceObserver' in window) {
-        const observer = new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) {
-                if (entry.entryType === 'measure') {
-                    console.log(`LA FIL Performance: ${entry.name}: ${entry.duration}ms`);
-                }
-            }
-        });
-        
-        observer.observe({ entryTypes: ['measure'] });
-    }
-
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         window.tvaApp = tvaApp;
-        console.log('🎵 LA FIL Portal Musical cargado exitosamente');
-        console.log('🔧 Instancia disponible en window.tvaApp para debugging');
     }
 });
 
@@ -816,10 +775,10 @@ if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
-                console.log('🔧 Service Worker registrado exitosamente');
+                console.log('Service Worker registrado');
             })
             .catch(registrationError => {
-                console.log('⚠️ Error al registrar Service Worker:', registrationError);
+                console.log('Error al registrar Service Worker:', registrationError);
             });
     });
 }
