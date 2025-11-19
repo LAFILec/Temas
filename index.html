@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LA FIL - Musical</title>
+    <link rel="icon" type="image/png" href="LFR.png">
+    <link rel="apple-touch-icon" href="LFR.png">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
@@ -32,7 +34,9 @@
     <header class="header">
         <div class="header-container">
             <div class="logo-section">
-                <a href="https://lafilec.github.io/LAFILec/" class="logo">LA FIL</a>
+                <a href="https://lafilec.github.io/LAFILec/" class="logo">
+                    <img src="LFR.png" alt="LA FIL" class="logo-image">
+                </a>
                 <div class="logo-subtitle">PORTAL MUSICAL</div>
                 <div class="logo-glow"></div>
             </div>
@@ -42,12 +46,12 @@
                     <span class="btn-text">Retornar</span>
                     <div class="btn-bg"></div>
                 </a>
-                <a href="https://lafilec.github.io/crowdfunding/" target="_blank"rel="noopener"class="btn btn-crowdfunding" data-text="CROWDFUNDING">
+                <a href="https://lafilec.github.io/crowdfunding/" target="_blank" rel="noopener" class="btn btn-crowdfunding" data-text="CROWDFUNDING">
                     <span class="btn-text">Crowdfunding</span>
                     <div class="btn-bg"></div>
                     <div class="btn-particles"></div>
                 </a>
-                <a href="https://www.instagram.com/lafil.ec/?igsh=MTc1MzY4MjdsYXZhYg%3D%3D" target="_blank"rel="noopener"class="btn btn-instagram" data-text="INSTAGRAM">
+                <a href="https://www.instagram.com/lafil.ec/?igsh=MTc1MzY4MjdsYXZhYg%3D%3D" target="_blank" rel="noopener" class="btn btn-instagram" data-text="INSTAGRAM">
                     <span class="btn-text">Instagram</span>
                     <div class="btn-bg"></div>
                 </a>
@@ -69,7 +73,7 @@
                 </h1>
                 <p class="hero-description">
                     Custodiando la armonía filarmónica,<br>
-                        del pasado, el presente y lo que aún está por sonar.
+                    del pasado, el presente y lo que aún está por sonar.
                 </p>
                 <div class="hero-ornament"></div>
             </div>
@@ -87,11 +91,15 @@
             </div>
         </section>
 
-        
-</html>
+        <section class="repertorio-switch-section">
+            <div class="repertorio-switch">
+                <button class="switch-btn active" data-repertorio="clasico">CLÁSICO</button>
+                <button class="switch-btn" data-repertorio="navidad">NAVIDAD</button>
+            </div>
+        </section>
 
         <section class="showcases-section">
-            <div class="showcase-grid">
+            <div class="showcase-grid" data-repertorio="clasico">
                 <article class="showcase-item" data-tilt>
                     <div class="showcase-frame">
                         <div class="showcase-image">
@@ -574,6 +582,216 @@
                     </div>
                 </article>
             </div>
+
+            <div class="showcase-grid" data-repertorio="navidad" style="display: none;">
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="hoy naviadad.jpg" alt="Hoy Es Navidad" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">Hoy Es Navidad</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                            <p class="showcase-description">
+                                E. Christian de Naylor<br>
+                                Arreglo de Roberto C. Savage (1966)<br>
+                                Es un villancico cristiano que celebra el nacimiento de Jesús como motivo de alegría, unidad y esperanza. Transmite un mensaje de adoración y gozo espiritual, recordando que la Navidad es el inicio del propósito de Cristo en el mundo.
+                            </p>
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=KXIRTsYdJR8" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="LC.png" alt="Last Christmas" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">Last Christmas</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                            <p class="showcase-description">
+                                1984 - Wham!<br>
+                                Arreglo de Greg Gilpin<br>
+                                La canción expresa la tristeza y vulnerabilidad que deja una decepción amorosa ocurrida en Navidad. Habla de darlo todo por alguien que no valoró ese amor, y del deseo de proteger el corazón para no repetir el dolor. Aunque es navideña, su mensaje central es emocional y personal.
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=E8gmARGvPlI" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-secondary">
+                                    <span class="btn-text">Original</span>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=zp8uTKySyaU&list=RDzp8uTKySyaU&start_radio=1" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="TDCAU.png" alt="They Don’t Care About Us" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">They Don’t Care About Us</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                            <p class="showcase-description">
+                                1996 - Michael Jackson<br>
+                                Es un grito contra la injusticia, la discriminación y el abuso de poder. Jackson expresa la frustración de los grupos oprimidos y denuncia cómo las autoridades ignoran el sufrimiento de muchas personas. Es una protesta fuerte que busca visibilizar el dolor social y exigir respeto.
+                            </p>
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=QNJL6nfu__Q&list=RDQNJL6nfu__Q&start_radio=1" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="SNA.png" alt="Seven Nation Army" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">Seven Nation Army</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                            <p class="showcase-description">
+                                2003 - The White Stripes<br>
+                                La canción simboliza la determinación ante la presión, las críticas y los enemigos. Expresa la idea de seguir adelante sin rendirse, incluso si “un ejército de siete naciones” se opone. Es un himno de resistencia, desafío y autosuficiencia.
+                            </p>
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=0J2QdDbelmY&list=RD0J2QdDbelmY&start_radio=1" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="especial.jpg" alt="Santa Claus llegó a la ciudad" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">Santa Claus llegó a la ciudad</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                           <p class="showcase-description">
+                                2006 - Luis Miguel<br>
+                                Es una versión navideña alegre que recuerda a los niños la magia de Santa Claus. El mensaje es festivo: invita a portarse bien, mantener la ilusión y celebrar la llegada de la Navidad con entusiasmo. Busca recrear el espíritu familiar y juguetón de la temporada.
+                            </p>
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=M2b6O30TtBo&list=RDM2b6O30TtBo&start_radio=1" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+
+                <article class="showcase-item" data-tilt>
+                    <div class="showcase-frame">
+                        <div class="showcase-image">
+                            <img src="Krampu.jpg" alt="Carol of the Bells" class="showcase-real-image" loading="lazy">
+                            <div class="image-overlay">
+                                <div class="overlay-pattern"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-content">
+                            <div class="content-header">
+                                <h3 class="showcase-title">Carol of the Bells (versión Krampus)</h3>
+                                <div class="title-underline"></div>
+                            </div>
+                            
+                            <p class="showcase-description">
+                                2015 - Mykola Leontovych<br>
+                                Arreglo de Douglas Pipes(2015)<br>
+                                Esta versión transforma el tradicional sonido navideño en algo oscuro e inquietante. Evoca tensión, misterio y un ambiente siniestro que contrasta con la alegría típica de Navidad. Busca transmitir el choque entre la celebración festiva y el terror folclórico del Krampus.
+                            </p>
+                            
+                            <div class="btn-group">
+                                <a href="https://www.youtube.com/watch?v=ZvZ0bKBBKVk&list=RDZvZ0bKBBKVk&start_radio=1" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-secondary">
+                                    <span class="btn-text">Original</span>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=5ydXzNUZNaY" target="_blank" rel="noopener noreferrer" class="btn-ver-mas btn-primary">
+                                    <span class="btn-text">Ver más</span>
+                                    <div class="btn-arrow">→</div>
+                                    <div class="btn-ripple"></div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="showcase-glow"></div>
+                    </div>
+                </article>
+            </div>
         </section>
 
         <section class="timeline-section">
@@ -615,3 +833,4 @@
 
     <script src="script.js"></script>
 </body>
+</html>
